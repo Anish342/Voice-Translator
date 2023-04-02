@@ -1,106 +1,185 @@
+#add ease of selecting languages in combobox
+#this is only english to other language work more on this!
+#clean code and add comments
+from tkinter import *
+import textblob
+from tkinter import ttk, messagebox
 from playsound import playsound as PS
 import speech_recognition as s_r
-from googletrans import Translator as Trans
+import googletrans
 from gtts import gTTS
 import os
 import pyaudio
-
-dic_language=('afrikaans', 'af', 'albanian', 'sq', 'amharic', 'am',
-	'arabic', 'ar', 'armenian', 'hy', 'azerbaijani', 'az',
-'basque', 'eu', 'belarusian', 'be', 'bengali', 'bn', 'bosnian',
-	'bs', 'bulgarian', 'bg', 'catalan', 'ca',
-'cebuano', 'ceb', 'chichewa', 'ny', 'chinese (simplified)',
-	'zh-cn', 'chinese (traditional)', 'zh-tw',
-'corsican', 'co', 'croatian', 'hr', 'czech', 'cs', 'danish',
-	'da', 'dutch', 'nl', 'english', 'en', 'esperanto',
-'eo', 'estonian', 'et', 'filipino', 'tl', 'finnish', 'fi',
-	'french', 'fr', 'frisian', 'fy', 'galician', 'gl',
-'georgian', 'ka', 'german', 'de', 'greek', 'el', 'gujarati',
-	'gu', 'haitian creole', 'ht', 'hausa', 'ha',
-'hawaiian', 'haw', 'hebrew', 'he', 'hindi', 'hi', 'hmong',
-	'hmn', 'hungarian', 'hu', 'icelandic', 'is', 'igbo',
-'ig', 'indonesian', 'id', 'irish', 'ga', 'italian', 'it',
-	'japanese', 'ja', 'javanese', 'jw', 'kannada', 'kn',
-'kazakh', 'kk', 'khmer', 'km', 'korean', 'ko', 'kurdish (kurmanji)',
-	'ku', 'kyrgyz', 'ky', 'lao', 'lo',
-'latin', 'la', 'latvian', 'lv', 'lithuanian', 'lt', 'luxembourgish',
-	'lb', 'macedonian', 'mk', 'malagasy',
-'mg', 'malay', 'ms', 'malayalam', 'ml', 'maltese', 'mt', 'maori',
-	'mi', 'marathi', 'mr', 'mongolian', 'mn',
-'myanmar (burmese)', 'my', 'nepali', 'ne', 'norwegian', 'no',
-	'odia', 'or', 'pashto', 'ps', 'persian',
-'fa', 'polish', 'pl', 'portuguese', 'pt', 'punjabi', 'pa',
-	'romanian', 'ro', 'russian', 'ru', 'samoan',
-'sm', 'scots gaelic', 'gd', 'serbian', 'sr', 'sesotho',
-	'st', 'shona', 'sn', 'sindhi', 'sd', 'sinhala',
-'si', 'slovak', 'sk', 'slovenian', 'sl', 'somali', 'so',
-	'spanish', 'es', 'sundanese', 'su',
-'swahili', 'sw', 'swedish', 'sv', 'tajik', 'tg', 'tamil',
-	'ta', 'telugu', 'te', 'thai', 'th', 'turkish', 'tr',
-'ukrainian', 'uk', 'urdu', 'ur', 'uyghur', 'ug', 'uzbek',
-	'uz', 'vietnamese', 'vi', 'welsh', 'cy', 'xhosa', 'xh',
-'yiddish', 'yi', 'yoruba', 'yo', 'zulu', 'zu')
+import pyttsx3
 
 
+root = Tk()
+root.title('Translator')
+root.iconbitmap('C:\Voice Translator(needs work)')
+root.geometry("880x300")
+
+original_text = Text(root, height=10, width=40)
+original_text.grid(row=0, column=0, pady=20, padx=10)
 
 
-def take_command():
-	r1 = s_r.Recognizer()
-	with s_r.Microphone() as source:
-		print("Listening to the user...")
-		r1.pause_threshold = 0.75
-		audio1 = r1.listen(source)
+def record_1():
+    r1 = s_r.Recognizer()
+    with s_r.Microphone() as source:
+    	r1.pause_threshold = 1
+    	audio1 = r1.listen(source)
 
-	try:
-		print("Recognizing the voice...")
-		query_1 = r1.recognize_google(audio1, language='en-in')
-		print(f" Recognized as : {query_1}\n")
-	except Exception as ep:
-		print("Sorry, it was not clear.Please repeat the sentence again...")
-		return "None"
+    try:
+    	
+		#original_text.insert(1.0,"Recognizing the voice...\n")
+        query_1 = r1.recognize_google(audio1, language='en-in')
+    	#original_text.insert(2.0,f"Recognized as : {query_1}\n")
+        original_text.insert(1.0, query_1)
+    except Exception as ep:
+    	original_text.insert(1.0,"Sorry, it was not clear.Please repeat the sentence again...")
+    	return "None"
+    return query_1
+
+rec=False
+def record():
+	query_1 = record_1()
+	while(query_1 == 'None'):
+    		query_1 = record_1()
+	rec=True
 	return query_1
 
 
-query_1 = take_command()
-while (query_1 == "None"):
-	query_1 = take_command()
+words=''
+x=''
+to=''
+def translate_it():
+	# Delete Any Previous Translations
+	translated_text.delete(1.0, END)
+
+	try:
+		# Get Languages From Dictionary Keys
+		# Get the From Langauage Key
+		for key, value in languages.items():
+			if (value == original_combo.get()):
+				from_language_key = key
+
+		# Get the To Language Key
+		for key, value in languages.items():
+			if (value == translated_combo.get()):
+				to_language_key = key
+
+		if rec:
+			words = textblob.TextBlob(record())
+			print(words)
+		else:
+    			words = textblob.TextBlob(original_text.get(1.0, END))	
+		# Turn Original Text into a TextBlob
+		#original_text.insert(1.0,query_1)
+		#words = textblob.TextBlob(query_1)
+
+		# Translate Text		
+		words = words.translate(from_lang=from_language_key , to=to_language_key)
+		
+		# Output translated text to screen
+		translated_text.insert(1.0, words)
+		x=str(words)
+		speak = gTTS(text=x,lang=to_language_key, slow=False)
+		if os.path.isfile('captured_JTP_voice.mp3'):
+    			os.remove('captured_JTP_voice.mp3')
+		# We will be using the save() function for saving the translated speech in #captured_JTP_voice.mp3 file
+		speak.save("captured_JTP_voice.mp3")
+
+		# Now at last, we will be using the OS module for running the translated voice.
+		PS('captured_JTP_voice.mp3')		
+		
+
+	except Exception as e:
+		messagebox.showerror("Translator", e)
 
 
-def destination_language():
-	print("Please input the language in which you want to convert the above sentence? \n")
-	print()
+
+def play():
+	PS('captured_JTP_voice.mp3')
+	#os.remove('captured_JTP_voice.mp3')		
 
 
-	to_language = take_command()
-	while (to_language == "None"):
-		to_language = take_command()
-	to_language = to_language.lower()
-	return to_language
+
+def clear():
+	# Clear the text boxes
+	original_text.delete(1.0, END)
+	translated_text.delete(1.0, END)
+
+#language_list = (1,2,3,4,5,6,7,8,9,0,11,12,13,14,15,16,16,1,1,1,1,1,1,1,1,1,1,1,1,1)
 
 
-to_language = destination_language()
 
-# Now, we will map the input destination language with the code
-while (to_language not in dic_language):
-	print("The language in which the user wants to convertthe voice command\ is currently not available, the user is requested to input some other language")
-	print()
-	to_language = destination_language()
 
-to_language = dic_language[dic_language.index(to_language) + 1]
-# Here, we will invoke the Google Translator
-translator1 = Trans()
-# Now we will translate from src to dest
-text_to_translate_1 = translator1.translate(query_1, dest=to_language)
-text1 = text_to_translate_1.text
-# We will be using the Google-Text-to-Speech i.e., gTTS() function of the gtts module for speaking the translated text into the input destination language
-# selected by the user which is stored in to_language.
-# We have also given third argument as False because it speaks very slowly by # default
-speak = gTTS(text=text1, slow=False)
 
-# We will be using the save() function for saving the translated speech in #captured_JTP_voice.mp3 file
-speak.save("captured_JTP_voice.mp3")
+# Grab Language List From GoogleTrans
+languages = googletrans.LANGUAGES
 
-# Now at last, we will be using the OS module for running the translated voice.
-PS('captured_JTP_voice.mp3')
+# Convert to list
+language_list = list(languages.values())
+
+
+
+
+# Text Boxes
+
+
+record_button = Button(root, text="Record", command=record)
+record_button.grid(row=3,column=0,padx=5)
+record_button.config( height =1, width = 5)
+
+translate_button = Button(root, text="Translate!", font=("Helvetica", 24),command=translate_it)
+translate_button.grid(row=0, column=1, padx=10, pady=10)
+
+translated_text = Text(root, height=10, width=40)
+translated_text.grid(row=0, column=2, pady=20, padx=10)
+listen_button = Button(root, text="Play", command=play)
+listen_button.grid(row=3,column=2,padx=5)
+listen_button.config( height =1, width = 5)
+
+# Combo boxes
+original_combo = ttk.Combobox(root, width=50, value=language_list)
+def search_o(event):
+    value = event.widget.get()
+    if value == '':
+    	original_combo['value'] =language_list
+    else:
+        data=[]
+        for item in language_list:
+            if value.lower() in item.lower():
+                data.append(item)
+        original_combo['value'] = data
+
+
+original_combo.set('Search')	
+original_combo.bind('<KeyRelease>',search_o)
+original_combo.current(21)
+original_combo.grid(row=1, column=0)
+
+translated_combo = ttk.Combobox(root, width=50, value=language_list)
+
+def search(event):
+    value = event.widget.get()
+    if value == '':
+    	translated_combo['value'] =language_list
+    else:
+        data=[]
+        for item in language_list:
+            if value.lower() in item.lower():
+                data.append(item)
+        translated_combo['value'] = data
+    					
+
+translated_combo.set('Search')	
+translated_combo.bind('<KeyRelease>',search)
+translated_combo.current(26)
+translated_combo.grid(row=1, column=2)
+
+# Clear button
+clear_button = Button(root, text="Clear", command=clear)
+clear_button.grid(row=2, column=1)
+
+root.mainloop()
 os.remove('captured_JTP_voice.mp3')
-print(text1)
